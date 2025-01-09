@@ -1,0 +1,24 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "nodemon --inspect index.js 8080",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "express-sslify": "^1.2.0",
+    "mercadopago": "^2.0.11",
+    "nodemon": "^3.1.4"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
