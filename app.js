@@ -13,23 +13,31 @@ const port = process.env.PORT || 5001;
 const app = express();
 app.use(express.json())
 
+
+/////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// GET
+//  Ej: /
+////////////////////////////////////////////////////////////////////////
+
 app.get("/", (req,res) => {
   res.send(`El Servidor está online , en el puerto:${port}`)
 })
 
 /////////////////////////////////////////////////////////////////////////
-///////////////////////////////////// POST  REGISTRAR USUARIO
+///////////////////////////////////// POST REGISTRAR USUARIO 
+//  Ej:  /newusu 
 ////////////////////////////////////////////////////////////////////////
 app.post("/newusu", async (req,res) => {
   res.header("Access-Control-Allow-Origin", "*")     
-  const {usu,pas} = req.query;
+  const {usu,pas,tipousu} = req.query;
   
-  if (!usu || !pas ){
+  if (!usu || !pas || !tipousu ){
        return res.status(200).json( { 
            ok:false,
-           msg: "Missing required fields: usuario, password",
+           msg: "Missing required fields: usuario, password ò role",
            usu,
            pas,
+           tipousu
    
            })
       
@@ -47,18 +55,18 @@ app.post("/newusu", async (req,res) => {
            })        
        }
 
-       const JWT = process.env.JWT_SECRET
+       //const JWT = process.env.JWT_SECRET
        
-       const token = jwt.sign({
-          usu,
-          pas
-       },
-          JWT 
-       )
+      //  const token = jwt.sign({
+      //     usu,
+      //     pas
+      //  },
+      //     JWT 
+      //  )
 
-       const salt = bcrypt.genSaltSync(10);
-       const hash = bcrypt.hashSync(pas, salt);
-       const result= await conn.query( 'INSERT into users (  username,password,role ) values ( ?,?,? )',[usu,hash,0]) 
+      //  const salt = bcrypt.genSaltSync(10);
+      //  const hash = bcrypt.hashSync(pas, salt);
+       const result= await conn.query( 'INSERT into users (  username,password,role ) values ( ?,?,? )',[usu,pas,tipousu]) 
        const {affectedRows,insertId} = result[0]
 
        if ( affectedRows == 1 ){
@@ -66,8 +74,7 @@ app.post("/newusu", async (req,res) => {
            res.status(200).json({
                ok: true,
                msg: "Succes!",
-               Id : insertId,
-               token
+               Id : insertId
    
            })
            
@@ -85,6 +92,7 @@ app.post("/newusu", async (req,res) => {
 
 /////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////// GET LOGIN
+//  Ej:  /login 
 /////////////////////////////////////////////////////////////////////////
 app.get("/login", async (req,res) => {
   const {usu,pas} = req.query;
@@ -94,7 +102,8 @@ app.get("/login", async (req,res) => {
       
   }else{
 
-       // VERIFICAMOS QUE EL usuaario + passwordEMAIL NO EXISTE!
+       // VERIFICAMOS QUE EL usuaario + password NO EXISTE!
+
        const resultado = await conn.query("select count(*) as count,username, password,role from users where username='"+usu+"' and password='"+pas+"'");
 
        const {count,username,password,role} = resultado[0][0]  
@@ -106,15 +115,14 @@ app.get("/login", async (req,res) => {
            })        
        }
 
-       const isMatch = await bcrypt.compare( pas, password )
-
-       if(!isMatch) {
-          return res.status(200).json({
-              ok:false,
-              msg: "Invalid credentials"
+      //  const isMatch = await bcrypt.compare( pas, password )
+      //  if(!isMatch) {
+      //     return res.status(200).json({
+      //         ok:false,
+      //         msg: "Invalid credentials"
               
-          })
-       }
+      //     })
+      //  }
 
        const JWT = process.env.JWT_SECRET
        const token = jwt.sign({
@@ -142,6 +150,7 @@ app.get("/login", async (req,res) => {
 
 /////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////// GET  LISTADO DE USUARIOS
+//   Ej: /stat
 ////////////////////////////////////////////////////////////////////////
 app.get("/stat", async (req,res) => {
   try {
